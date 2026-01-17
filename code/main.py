@@ -38,6 +38,24 @@ pygame.init()
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption("The Adventures Of R.O.V.")
 
+# Load bg images
+# bg_01
+SUB_PATH = r'..\art\assets\bg'
+TILE = 'transition_01.png'
+IMAGE_PATH = os.path.join(BASE_PATH, SUB_PATH, TILE)
+bg_01 = pygame.image.load(IMAGE_PATH).convert()
+# bg_02
+SUB_PATH = r'..\art\assets\bg'
+TILE = 'transition_02.png'
+IMAGE_PATH = os.path.join(BASE_PATH, SUB_PATH, TILE)
+bg_02 = pygame.image.load(IMAGE_PATH).convert()
+
+# Load walls
+SUB_PATH = r'..\art\assets\bg\cave'
+TILE = 'cave_walls.png'
+IMAGE_PATH = os.path.join(BASE_PATH, SUB_PATH, TILE)
+wall_main = pygame.image.load(IMAGE_PATH)
+
 
 rov = Submarine(BASE_PATH, size, 500, 150, 50)
 # rov.rect.x = 460
@@ -124,13 +142,17 @@ while carry_on:
         # End Of Game
         carry_on = False
 
+
     all_sprites_list.update()
     all_coming_obstacles.update(dt)
 
-    # Drawing on Screen
-    screen.fill(GREEN)
+    # Blit multiple images after one another
+    screen.blits(((bg_01, [0, 0]), (bg_02, [0, 512])))
+    # Draw wall
+    screen.blit(wall_main)
+
     # Draw The Road
-    pygame.draw.rect(screen, GREY, [40, 0, 400, SCREENHEIGHT])
+    # pygame.draw.rect(screen, GREY, [40, 0, 400, SCREENHEIGHT])
     # Draw Line painting on the road
     pygame.draw.line(screen, WHITE, [140, 0], [140, SCREENHEIGHT], 5)
     # Draw Line painting on the road
