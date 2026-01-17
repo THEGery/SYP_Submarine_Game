@@ -24,37 +24,71 @@ YELLOW = (255, 255, 0)
 CYAN = (0, 255, 255)
 BLUE = (100, 100, 255)
 
+SCREENWIDTH = 1000
+SCREENHEIGHT = 1200
+size = (SCREENWIDTH, SCREENHEIGHT)
+
+# game variables
+scroll = 0
+
 speed_factor = 5
 speed_factor_max = 15
 speed_factor_min = 3
 
 color_list = (RED, GREEN, PURPLE, YELLOW, CYAN, BLUE)
 
-SCREENWIDTH = 800
-SCREENHEIGHT = 800
-size = (SCREENWIDTH, SCREENHEIGHT)
 
 pygame.init()
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption("The Adventures Of R.O.V.")
 
-# Load bg images
-# bg_01
-SUB_PATH = r'..\art\assets\bg'
-TILE = 'transition_01.png'
-IMAGE_PATH = os.path.join(BASE_PATH, SUB_PATH, TILE)
-bg_01 = pygame.image.load(IMAGE_PATH).convert()
-# bg_02
-SUB_PATH = r'..\art\assets\bg'
-TILE = 'transition_02.png'
-IMAGE_PATH = os.path.join(BASE_PATH, SUB_PATH, TILE)
-bg_02 = pygame.image.load(IMAGE_PATH).convert()
 
-# Load walls
-SUB_PATH = r'..\art\assets\bg\cave'
-TILE = 'cave_walls.png'
-IMAGE_PATH = os.path.join(BASE_PATH, SUB_PATH, TILE)
-wall_main = pygame.image.load(IMAGE_PATH)
+def scale_to_window_width(image):
+    """Scale bg images to window height."""
+
+    bg_image_width, bg_image_height = image.get_size()
+    scale_factor = SCREENWIDTH / bg_image_width
+    new_height = int(bg_image_height * scale_factor)
+
+    return pygame.transform.scale(image, (SCREENWIDTH, new_height))
+
+
+# image path setup for background images
+SUB_PATH = r'..\art\assets\bg'
+image_path = os.path.join(BASE_PATH, SUB_PATH)
+
+bg_images = []
+# load bg (section & transition)
+for image in range(1, 7):
+    bg_transition = pygame.image.load(fr'{image_path}\transition_{image}.png').convert_alpha()
+    # bg_section = pygame.image.load(fr'{image_path}\section_{image}.png').convert_alpha()
+    bg_images.append(scale_to_window_width(bg_transition))  # resize image to screen width
+
+cave_images = []
+# load cave walls
+for image in range(1, 3):
+    cave_wall = pygame.image.load(fr'{image_path}\cave_{image}.png').convert_alpha()
+    cave_images.append(scale_to_window_width(cave_wall))  # resize image to screen width
+
+bg_height = bg_images[0].get_height()
+cave_height = cave_images[0].get_height()
+
+# draw background images
+def draw_bg():
+    """Draw bg images in order and with correct offset."""
+
+    # draw two bg images with y-offset
+    offset = 0
+    for image in bg_images:
+        screen.blit(image, (0, (offset * bg_height) - scroll * 0.25))
+        offset += 1
+
+    # draw cave walls
+    for duplicate in range(2):
+        scroll_speed_factor = 0.5
+        for image in cave_images:
+            screen.blit(image, (0, (duplicate * cave_height) - scroll * scroll_speed_factor))
+            scroll_speed_factor += 0.5
 
 
 rov = Submarine(BASE_PATH, size, 500, 150, 50)
@@ -116,13 +150,12 @@ while carry_on:
         if speed_factor < speed_factor_max:
             speed_factor += 0.2
         # else: speed_factor += 0.0
-        
+
     if keys[pygame.K_DOWN]:
         if speed_factor > speed_factor_min:
             speed_factor -= 0.2
         # else: speed_factor -= 0.0
-        
-        
+
     print("Speed factor: ", speed_factor)
 
     # Game Logic
@@ -146,19 +179,12 @@ while carry_on:
     all_sprites_list.update()
     all_coming_obstacles.update(dt)
 
-    # Blit multiple images after one another
-    screen.blits(((bg_01, [0, 0]), (bg_02, [0, 512])))
-    # Draw wall
-    screen.blit(wall_main)
 
-    # Draw The Road
-    # pygame.draw.rect(screen, GREY, [40, 0, 400, SCREENHEIGHT])
-    # Draw Line painting on the road
-    pygame.draw.line(screen, WHITE, [140, 0], [140, SCREENHEIGHT], 5)
-    # Draw Line painting on the road
-    pygame.draw.line(screen, WHITE, [240, 0], [240, SCREENHEIGHT], 5)
-    # Draw Line painting on the road
-    pygame.draw.line(screen, WHITE, [340, 0], [340, SCREENHEIGHT], 5)
+    # draw bg images
+    draw_bg()
+    # bg scroll
+    scroll += speed_factor  # base is 5
+
 
     # Actually it's items in the list: player plus 4 others
     all_sprites_list.draw(screen)
