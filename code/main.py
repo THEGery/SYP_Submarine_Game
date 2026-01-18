@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 """This is the main module where the game starts.
 
+..module co-author:: Viktor Barath <viktor.barath7@gmail.com>
+..module co-author:: Gerald Haueisen<>
+
 Other modules, classes and functions neccessary for the game are imported and
 can not be run on their own -> start the game here.
 """
@@ -9,9 +12,13 @@ import pygame
 import random
 import time
 import os
+
+from itertools import zip_longest
+
 # Let's import the Submarine Class
 from obstacle import Obstacle
 from submarine import Submarine
+from background import Background
 
 BASE_PATH = os.path.dirname(__file__)
 
@@ -29,11 +36,10 @@ SCREENHEIGHT = 1200
 size = (SCREENWIDTH, SCREENHEIGHT)
 
 # game variables
-scroll = 0
-
-speed_factor = 5
-speed_factor_max = 15
-speed_factor_min = 3
+scroll_speed = 1
+speed_factor = 8 # old 5
+speed_factor_max = 50 # old 15
+speed_factor_min = 5 # old 3
 
 color_list = (RED, GREEN, PURPLE, YELLOW, CYAN, BLUE)
 
@@ -43,52 +49,39 @@ screen = pygame.display.set_mode(size)
 pygame.display.set_caption("The Adventures Of R.O.V.")
 
 
-def scale_to_window_width(image):
-    """Scale bg images to window height."""
+# instantiate background images and create bg list
+background_layers_a = []
+for image in range(1, 8):
+    background = Background(SCREENWIDTH, f'section_{image}.png', scroll_speed * 0.15)
+    background_layers_a.append(background)
 
-    bg_image_width, bg_image_height = image.get_size()
-    scale_factor = SCREENWIDTH / bg_image_width
-    new_height = int(bg_image_height * scale_factor)
-
-    return pygame.transform.scale(image, (SCREENWIDTH, new_height))
-
-
-# image path setup for background images
-SUB_PATH = r'..\art\assets\bg'
-image_path = os.path.join(BASE_PATH, SUB_PATH)
-
-bg_images = []
-# load bg (section & transition)
+background_layers_b = []
 for image in range(1, 7):
-    bg_transition = pygame.image.load(fr'{image_path}\transition_{image}.png').convert_alpha()
-    # bg_section = pygame.image.load(fr'{image_path}\section_{image}.png').convert_alpha()
-    bg_images.append(scale_to_window_width(bg_transition))  # resize image to screen width
+    background = Background(SCREENWIDTH, f'transition_{image}.png', scroll_speed * 0.15)
+    background_layers_b.append(background)
 
-cave_images = []
-# load cave walls
-for image in range(1, 3):
-    cave_wall = pygame.image.load(fr'{image_path}\cave_{image}.png').convert_alpha()
-    cave_images.append(scale_to_window_width(cave_wall))  # resize image to screen width
+background_layers = []
+for x, y in zip_longest(background_layers_a, background_layers_b):
+    if x is not None:
+        background_layers.append(x)
+    if y is not None:
+        background_layers.append(y)
 
-bg_height = bg_images[0].get_height()
-cave_height = cave_images[0].get_height()
 
-# draw background images
-def draw_bg():
-    """Draw bg images in order and with correct offset."""
+# instantiate bottom images and create bg list
+bottom_layers = []
+for image in range(1, 4):
+    background = Background(SCREENWIDTH, f'cave_b_{image}.png', scroll_speed * 0.5, True)
+    bottom_layers.append(background)
 
-    # draw two bg images with y-offset
-    offset = 0
-    for image in bg_images:
-        screen.blit(image, (0, (offset * bg_height) - scroll * 0.25))
-        offset += 1
+last_bg = background_layers[-1]
 
-    # draw cave walls
-    for duplicate in range(2):
-        scroll_speed_factor = 0.5
-        for image in cave_images:
-            screen.blit(image, (0, (duplicate * cave_height) - scroll * scroll_speed_factor))
-            scroll_speed_factor += 0.5
+
+# instanciate background images and create midground list
+midground_layers = [
+    Background(SCREENWIDTH, 'cave_1.png', scroll_speed * 0.5, True),
+    Background(SCREENWIDTH, 'cave_2.png', scroll_speed, True)
+]
 
 
 rov = Submarine(BASE_PATH, size, 500, 150, 50)
@@ -181,9 +174,29 @@ while carry_on:
 
 
     # draw bg images
-    draw_bg()
-    # bg scroll
-    scroll += speed_factor  # base is 5
+    for layer in background_layers:
+        layer.update_bg(speed_factor)
+
+    for i, layer in enumerate(background_layers):
+        y_offset = i * layer.height
+        layer.draw_bg(screen, y_offset=y_offset)
+        # MAKE SURE LAYERS DESPAWN AFTER LEAVING SCREEN!
+
+
+    # draw midground images
+    for layer in midground_layers:
+        layer.update(speed_factor)
+
+    for layer in midground_layers:
+        layer.draw_mid(screen)
+
+
+    # draw bottom images
+    for layer in bottom_layers:
+        layer.update_bg(speed_factor)
+
+    # for layer in bottom_layers:
+    #     layer.draw_bottom(screen)
 
 
     # Actually it's items in the list: player plus 4 others
