@@ -16,33 +16,45 @@ import pygame
 import os
 import math
 
-WHITE = (255, 255, 255)
+# BASE_PATH = os.path.dirname(__file__)
+SUB_PATH = r'art\assets\obsticles'
+TILE = 'barrel_obsticle.png'
+# IMAGE_PATH = os.path.join(BASE_PATH, SUB_PATH, TILE)
+
+SCALE_FACTOR = 25 # 2.5
 
 
-class Obstacle(pygame.sprite.Sprite):
+class Barrel(pygame.sprite.Sprite):
     """Submarine class; derives from the Sprite class."""
-
-    def __init__(self, color, width, height, speed, start_x, start_y):
+    def __init__(self, basepath: str, screen_size: tuple[int, int],
+                 start_x: int, start_y: int, speed: int, alpha_val: int=255):
         """Call the parent class (Sprite) constructor."""
         super().__init__()
+        
+        # self.screen_size = screen_size
+        self.screen_w = screen_size[0]
+        self.screen_h = screen_size[1]
+        
+        image_path = os.path.join(basepath, SUB_PATH, TILE)
+        self.image_og = pygame.image.load(image_path).convert_alpha()
+        size_tuple = self.image_og.get_size()
+        image_og_width = size_tuple[0]
+        image_og_height = size_tuple[1]
+        display_area = self.screen_w * self.screen_h
+        image_area = image_og_width * image_og_height
+        image_conversion_ratio = display_area / (image_area * SCALE_FACTOR)
+        # print('display factor:', self.screen_w, self.screen_h)
+        # print('image size:', image_og_width, image_og_height)
+        self.image = pygame.transform.scale(
+            self.image_og,
+            (image_og_width/image_conversion_ratio,
+             image_og_height/image_conversion_ratio)
+        )
 
-        # Instead we could load a proper pciture of a submarine...
-        # self.image = pygame.image.load("submarine.png").convert_alpha()
-        # BASE_PATH = os.path.dirname(__file__)
-        # image_path = os.path.join(BASE_PATH, "..",
-        #                           "art", "assets", "player", "player.png")
-        # self.image = pygame.image.load(image_path)
-
-        # Pass in color, x and y position, width and height.
-        # Set the background color and set it to be transparent
-        self.image = pygame.Surface([width, height])
-        self.image.fill(WHITE)
-        self.image.set_colorkey(WHITE)
-
-        # Initialise attributes of the submarine.
-        self.width = width
-        self.height = height
-        self.color = color
+        # # Initialise attributes of the submarine.
+        # self.width = width
+        # self.height = height
+        # self.color = color
         self.speed = speed
         
         # --- Oszillations-Parameter ---
@@ -61,12 +73,15 @@ class Obstacle(pygame.sprite.Sprite):
         self.time_elapsed = 0.0 
 
         # Draw the submarine (a rectangle!)
-        pygame.draw.rect(self.image, color, [0, 0, width, height])
+        # pygame.draw.rect(self.image, color, [0, 0, width, height])
 
         # Fetch rectangle object which has the dimensions of the image
         self.rect = self.image.get_rect()
         self.rect.x = start_x
         self.rect.y = start_y
+        self.alpha_val = alpha_val
+        
+        pygame.Surface.set_alpha(self.image, self.alpha_val)
 
     def move_right(self, pixels):
         """Move character to the right."""
