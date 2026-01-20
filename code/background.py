@@ -17,7 +17,6 @@ class Background(pygame.surface.Surface):
         self.screen_width = screen_width
         self.image = image
         self.speed = speed
-        self.y = 0
 
         # import image with or without alpha
         image_path = os.path.join(BASE_PATH, SUB_PATH, self.image)
@@ -34,6 +33,9 @@ class Background(pygame.surface.Surface):
 
         # bg_image scaled to the window width
         self.scaled_image = pygame.transform.scale(self.bg_image, (screen_width, new_height))
+        self.rect = self.scaled_image.get_rect()
+        self.rect.x = 0
+        self.rect.y = 0
         self._height = self.scaled_image.get_height()
         self._rect = self.scaled_image.get_rect().bottom
 
@@ -43,34 +45,28 @@ class Background(pygame.surface.Surface):
         return self._height
 
 
-    @property
-    def rect_bottom(self):
-        return self._rect
-
-
     def update_bg(self, speed_factor: float):
         """Scroll background images."""
-        self.y -= self.speed * speed_factor
+        self.rect.y -= self.speed * speed_factor
 
 
     def update(self, speed_factor: float):
         """Scroll background  and reset image after it leaves screen."""
         self.update_bg(speed_factor)
 
-        if self.y <= -self.height:
-            self.y += self.height
+        if self.rect.y <= -self.rect.height:
+            self.rect.y += self.rect.height
 
 
     def draw_bg(self, screen, y_offset):
-        screen.blit(self.scaled_image, (0, self.y + y_offset))
-        # screen.blit(self.scaled_image, (0, self.y - self.height + y_offset))
+        screen.blit(self.scaled_image, (self.rect.x, self.rect.y + y_offset))
 
 
     def draw_mid(self, screen):
-        screen.blit(self.scaled_image, (0, self.y))
-        screen.blit(self.scaled_image, (0, (self.y + self.height)))
-        screen.blit(self.scaled_image, (0, (self.y + self.height * 2)))
+        screen.blit(self.scaled_image, (self.rect.x, self.rect.y))
+        screen.blit(self.scaled_image, (self.rect.x, (self.rect.y + self.rect.height)))
+        screen.blit(self.scaled_image, (self.rect.x, (self.rect.y + self.rect.height * 2)))
 
 
     def draw_bottom(self, screen):
-        screen.blit(self.scaled_image, (0, self.y))
+        screen.blit(self.scaled_image, (self.rect.x, self.rect.y))

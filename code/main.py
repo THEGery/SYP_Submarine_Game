@@ -31,8 +31,8 @@ YELLOW = (255, 255, 0)
 CYAN = (0, 255, 255)
 BLUE = (100, 100, 255)
 
-SCREENWIDTH = 1000
-SCREENHEIGHT = 1200
+SCREENWIDTH = 800
+SCREENHEIGHT = 1000
 size = (SCREENWIDTH, SCREENHEIGHT)
 
 # game variables
@@ -47,7 +47,6 @@ color_list = (RED, GREEN, PURPLE, YELLOW, CYAN, BLUE)
 pygame.init()
 screen = pygame.display.set_mode(size)
 pygame.display.set_caption("The Adventures Of R.O.V.")
-
 
 # instantiate background images and create bg list
 background_layers_a = []
@@ -67,6 +66,8 @@ for x, y in zip_longest(background_layers_a, background_layers_b):
     if y is not None:
         background_layers.append(y)
 
+last_bg = background_layers[-1]
+last_bg_height = last_bg.rect.height
 
 # instantiate bottom images and create bg list
 bottom_layers = []
@@ -75,6 +76,7 @@ for image in range(1, 4):
     bottom_layers.append(background)
 
 last_bg = background_layers[-1]
+last_bg_pos = last_bg.rect.y
 
 
 # instanciate background images and create midground list
@@ -182,6 +184,10 @@ while carry_on:
         layer.draw_bg(screen, y_offset=y_offset)
         # MAKE SURE LAYERS DESPAWN AFTER LEAVING SCREEN!
 
+    # print(f'IMAGE Y BOTTOM: {last_bg.rect.y + y_offset} LAST BG: {last_bg_height}')
+    if last_bg.rect.y + y_offset <= SCREENHEIGHT + last_bg_height: 
+        print(f'LAST IMAGE: {last_bg}')
+        scroll_speed = 0
 
     # draw midground images
     for layer in midground_layers:
