@@ -41,9 +41,9 @@ BASE_PATH = resource_path("")
 
 # game variables
 scroll_speed = 1
-speed_factor = 8 # old 5
+speed_factor = 10 # old 5
 speed_factor_max = 50 # old 15
-speed_factor_min = 5 # old 3
+speed_factor_min = 6 # old 3
 
 # color_list = (RED, GREEN, PURPLE, YELLOW, CYAN, BLUE)
 
@@ -61,7 +61,6 @@ screen_size = (screen_width, screen_height)
 #-------------------------------------
 screen = pygame.display.set_mode(screen_size)
 pygame.display.set_caption("The Adventures Of R.O.V.")
-
 
 # instantiate background images and create bg list
 background_layers_a = []
@@ -88,8 +87,8 @@ for image in range(1, 4):
     background = Background(screen_width, f'cave_b_{image}.png', scroll_speed * 0.5, True)
     bottom_layers.append(background)
 
-last_bg = background_layers[-1]
-
+last_image = background_layers[-1]
+last_img_height = last_image.rect.height
 
 # instanciate background images and create midground list
 midground_layers = [
@@ -97,6 +96,8 @@ midground_layers = [
     Background(screen_width, 'cave_2.png', scroll_speed, True)
 ]
 
+# Offset for drawing the bg images
+y_offset = 0
 
 rov = Submarine(BASE_PATH, screen_size, 700, 150, 50)
 # rov.rect.x = 460
@@ -184,7 +185,7 @@ while carry_on:
 
     # draw bg images
     for layer in background_layers:
-        layer.update_bg(speed_factor)
+        layer.update(screen, last_image, last_img_height, y_offset, speed_factor)
 
     for i, layer in enumerate(background_layers):
         y_offset = i * layer.height
@@ -193,13 +194,13 @@ while carry_on:
         
         # Prüfen, ob dieser Layer gerade im sichtbaren Bereich ist
         # (vereinfachte Logik: wenn der y_offset + layer_position innerhalb der screen_height liegt)
-        if -layer.height < (layer.y + y_offset) < screen_height:
-            print(f"Aktuell im Bild: Hintergrund Nr. {i}")
+        # if -layer.height < (layer.y + y_offset) < screen_height:
+        #     print(f"Aktuell im Bild: Hintergrund Nr. {i}")
 
 
     # draw midground images
     for layer in midground_layers:
-        layer.update(speed_factor)
+        layer.update(screen, last_image, last_img_height, y_offset, speed_factor, False)
 
     for layer in midground_layers:
         layer.draw_mid(screen)
@@ -207,10 +208,10 @@ while carry_on:
 
     # draw bottom images
     for layer in bottom_layers:
-        layer.update_bg(speed_factor)
+        layer.update(screen, last_image, last_img_height, y_offset, speed_factor)
 
-    # for layer in bottom_layers:
-    #     layer.draw_bottom(screen)
+    for layer in bottom_layers:
+        layer.draw_bottom(screen, last_image, y_offset)
 
 
     # Actually it's items in the list: player plus 4 others
