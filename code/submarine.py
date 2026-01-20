@@ -12,7 +12,7 @@ import pygame
 import os
 
 BASE_PATH = os.path.dirname(__file__)
-SUB_PATH = r'..\art\assets\player'
+SUB_PATH = r'art\assets\player' #r'..\art\assets\player'
 TILE = 'player.png'
 IMAGE_PATH = os.path.join(BASE_PATH, SUB_PATH, TILE)
 print(IMAGE_PATH)

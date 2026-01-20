@@ -74,3 +74,7 @@ class Background(pygame.surface.Surface):
 
     def draw_bottom(self, screen):
         screen.blit(self.scaled_image, (0, self.y))
+        
+        
+if __name__ == '__main__':
+    print(BASE_PATH)

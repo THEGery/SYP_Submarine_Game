@@ -1,1 +1,12 @@
 __pycache__/
+
+# Virtuelle Umgebung
+venv/
+
+# PyInstaller Verzeichnisse
+build/
+dist/
+*.spec
+
+# Python Cache
+__pycache__/
